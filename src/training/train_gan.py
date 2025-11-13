@@ -20,6 +20,43 @@ from src.utils.logger import setup_logger
 logger = setup_logger('train_gan')
 
 
+def check_gpu_availability():
+    """
+    Check and log GPU availability
+
+    Returns:
+        bool: True if GPU available, False otherwise
+    """
+    try:
+        import tensorflow as tf
+
+        gpus = tf.config.list_physical_devices('GPU')
+
+        if gpus:
+            logger.info(f"✓ Found {len(gpus)} GPU(s):")
+            for i, gpu in enumerate(gpus):
+                logger.info(f"  [{i}] {gpu.name}")
+
+            # Enable memory growth
+            try:
+                for gpu in gpus:
+                    tf.config.experimental.set_memory_growth(gpu, True)
+                logger.info("✓ GPU memory growth enabled")
+            except RuntimeError as e:
+                logger.warning(f"Could not set memory growth: {e}")
+
+            logger.info("✓ Training will use GPU (5-10x faster)")
+            return True
+        else:
+            logger.info("ℹ No GPU found. Training will use CPU.")
+            logger.info("  Tip: For faster training, consider using GPU with CUDA")
+            return False
+
+    except Exception as e:
+        logger.warning(f"Could not check GPU: {e}")
+        return False
+
+
 def plot_training_history(history: dict, output_path: str):
     """
     Plot and save training history
@@ -99,6 +136,9 @@ def main():
     logger.info("GAN MODEL TRAINING")
     logger.info("="*50)
 
+    # Check GPU availability
+    has_gpu = check_gpu_availability()
+
     # Load or extract features
     if args.data:
         logger.info(f"Loading features from {args.data}")
@@ -142,6 +182,15 @@ def main():
 
     # Train GAN
     logger.info(f"\nTraining GAN: {args.epochs} epochs, batch_size={args.batch_size}")
+
+    # Estimate training time
+    if has_gpu:
+        estimated_time = args.epochs * 0.3  # ~0.3 seconds per epoch on GPU
+        logger.info(f"Estimated training time: ~{estimated_time/60:.1f} minutes (with GPU)")
+    else:
+        estimated_time = args.epochs * 1.5  # ~1.5 seconds per epoch on CPU
+        logger.info(f"Estimated training time: ~{estimated_time/60:.1f} minutes (with CPU)")
+
     logger.info("This may take a while...")
 
     history = gan.train(

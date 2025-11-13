@@ -207,6 +207,59 @@ Input (feature_dim) → Dense(512) → LeakyReLU → Dropout
                     → Dense(1) → Sigmoid
 ```
 
+## 🚀 GPU Support
+
+### GPU vs CPU Training
+
+**Authentication Model:**
+- ❌ CPU only (scikit-learn)
+- Training: ~10 seconds
+- GPU không ảnh hưởng
+
+**GAN Model:**
+- ✅ **TỰ ĐỘNG dùng GPU nếu có**
+- Speedup: **5-10x faster** với GPU
+- Recommended!
+
+### Check GPU Availability
+
+```bash
+# Windows
+check_gpu.bat
+
+# Linux/Mac
+python check_gpu.py
+```
+
+### Training với GPU
+
+```bash
+# GPU optimized (1500 epochs, ~7-8 phút)
+python -m src.training.train_gan --epochs 1500 --batch-size 64
+
+# Windows batch script
+train_models_gpu.bat
+```
+
+### Training với CPU
+
+```bash
+# CPU optimized (500 epochs, ~15 phút)
+python -m src.training.train_gan --epochs 500 --batch-size 32
+
+# Windows batch script
+train_models.bat
+```
+
+### Performance Comparison
+
+| Setup | GAN Training Time (1000 epochs) |
+|-------|--------------------------------|
+| NVIDIA GPU | ~5-6 minutes ⚡ |
+| CPU | ~25-30 minutes 🐌 |
+
+**📖 Chi tiết:** Xem `GPU_GUIDE.md` để setup GPU support
+
 ## Troubleshooting
 
 ### TensorFlow Errors
